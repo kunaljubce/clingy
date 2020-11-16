@@ -6,7 +6,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # If modifying these scopes, delete the file token.pickle.
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+#SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+SCOPES = ['https://mail.google.com/']
 
 def main():
     """Shows basic usage of the Gmail API.
@@ -26,7 +27,6 @@ def main():
         else:
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
-
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
@@ -46,10 +46,18 @@ def main():
         #print('Labels:')
         for label in labels:
             if label['name'] in delete_msgs_from_labels:
-                label_dtls = service.users().labels().get(userId = "me", id = label['name']).execute()
+                label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
                 total_msg_count_in_label, unread_msg_count_in_label = label_dtls['messagesTotal'], label_dtls['messagesUnread']
                 print("Total Messages in", label['name'], ":", total_msg_count_in_label)
                 print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
+
+                all_msgs_metadata_in_label = service.users().messages().list(userId = "me", labelIds=label['name']).execute()['messages']
+                msg_ids_in_label = []
+                for msg_metadata in all_msgs_metadata_in_label:
+                    if label['name'] == "SPAM":
+                        msg_ids_in_label.append(msg_metadata['id'])
+                        service.users().messages().delete(userId="me", id=msg_metadata['id']).execute()
+                print(msg_ids_in_label)
 
 if __name__ == '__main__':
     main()
