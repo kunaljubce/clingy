@@ -14,8 +14,8 @@ def main():
     Lists the user's Gmail labels.
     """
     creds = None
-    # The file token.pickle stores the user's access and refresh tokens, and is created automatically when the authorization flow completes 
-    # for the first time.
+    # The file token.pickle stores the user's access and refresh tokens, and is created automatically when the 
+    # authorization flow completes for the first time.
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
@@ -35,7 +35,6 @@ def main():
 
     # Call the Gmail API
     results = service.users().labels().list(userId='me').execute()
-    #print(results)
     labels = results.get('labels', [])
 
     delete_msgs_from_labels = ['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL']
@@ -43,7 +42,6 @@ def main():
     if not labels:
         print('No labels found.')
     else:
-        #print('Labels:')
         for label in labels:
             if label['name'] in delete_msgs_from_labels:
                 label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
