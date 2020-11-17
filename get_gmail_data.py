@@ -8,13 +8,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 parser = argparse.ArgumentParser(description='Pass some parameters.')
-# parser.add_argument('--labels', default=['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL'], help='Label names whose messages will be deleted')
-# parser.add_argument('--spam', default='all', help='Specify the type of SPAM messages to be deleted i.e. UNREAD, READ or ALL')
 parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
     help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
 args = parser.parse_args()
-#delete_spam_mail_type = args.spam.lower()
-#label_names = args.labels
 labels_and_msg_types = args.labels_and_types
 
 # If modifying these scopes, delete the file token.pickle.
@@ -25,7 +21,6 @@ def delete_messages(labels, service):
     """
     Takes the label names and service object as arguments and deletes the messages per label.
     """
-    # delete_msgs_from_labels = ['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL']
     delete_msgs_from_labels = list(labels_and_msg_types.keys())
 
     if not labels:
