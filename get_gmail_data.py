@@ -1,4 +1,5 @@
 from __future__ import print_function
+import json
 import pickle
 import os.path
 import argparse
@@ -7,37 +8,44 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 parser = argparse.ArgumentParser(description='Pass some parameters.')
-parser.add_argument('--spam', default='all', help='Specify the type of SPAM messages to be deleted i.e. UNREAD, READ or ALL')
+# parser.add_argument('--labels', default=['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL'], help='Label names whose messages will be deleted')
+# parser.add_argument('--spam', default='all', help='Specify the type of SPAM messages to be deleted i.e. UNREAD, READ or ALL')
+parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
+    help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
 args = parser.parse_args()
-delete_spam_mail_type = args.spam.lower()
+#delete_spam_mail_type = args.spam.lower()
+#label_names = args.labels
+labels_and_msg_types = args.labels_and_types
 
 # If modifying these scopes, delete the file token.pickle.
 #SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 SCOPES = ['https://mail.google.com/']
 
 def delete_messages(labels, service):
-    
-    delete_msgs_from_labels = ['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL']
+    """
+    Takes the label names and service object as arguments and deletes the messages per label.
+    """
+    # delete_msgs_from_labels = ['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL']
+    delete_msgs_from_labels = list(labels_and_msg_types.keys())
 
     if not labels:
         print('No labels found.')
     else:
         for label in labels:
-            if label['name'] in delete_msgs_from_labels:
+            if label['name'].lower() in delete_msgs_from_labels:
                 label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
                 total_msg_count_in_label, unread_msg_count_in_label = label_dtls['messagesTotal'], label_dtls['messagesUnread']
                 print("Total Messages in", label['name'], ":", total_msg_count_in_label)
                 print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
 
                 all_msgs_metadata_in_label = service.users().messages() \
-                    .list(userId = "me", labelIds=label['name'], q='is:{}'.format(delete_spam_mail_type)).execute()['messages']
+                    .list(userId = "me", labelIds=label['name'], q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
             
                 msg_ids_in_label = []
                 for msg_metadata in all_msgs_metadata_in_label:
-                    if label['name'] == "SPAM":
-                        msg_ids_in_label.append(msg_metadata['id'])
-                        service.users().messages().delete(userId="me", id=msg_metadata['id']).execute()
-                print(msg_ids_in_label)
+                    msg_ids_in_label.append(msg_metadata['id'])
+                    service.users().messages().delete(userId="me", id=msg_metadata['id']).execute()
+                print(len(msg_ids_in_label))
 
 
 def main():
@@ -69,28 +77,6 @@ def main():
     labels = results.get('labels', [])
 
     delete_messages(labels, service)
-
-    # delete_msgs_from_labels = ['SPAM', 'CATEGORY_PROMOTIONS', 'CATEGORY_SOCIAL']
-
-    # if not labels:
-    #     print('No labels found.')
-    # else:
-    #     for label in labels:
-    #         if label['name'] in delete_msgs_from_labels:
-    #             label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
-    #             total_msg_count_in_label, unread_msg_count_in_label = label_dtls['messagesTotal'], label_dtls['messagesUnread']
-    #             print("Total Messages in", label['name'], ":", total_msg_count_in_label)
-    #             print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
-
-    #             all_msgs_metadata_in_label = service.users().messages() \
-    #                 .list(userId = "me", labelIds=label['name'], q='is:{}'.format(delete_spam_mail_type)).execute()['messages']
-            
-    #             msg_ids_in_label = []
-    #             for msg_metadata in all_msgs_metadata_in_label:
-    #                 if label['name'] == "SPAM":
-    #                     msg_ids_in_label.append(msg_metadata['id'])
-    #                     service.users().messages().delete(userId="me", id=msg_metadata['id']).execute()
-    #             print(msg_ids_in_label)
 
 if __name__ == '__main__':
     main()
