@@ -1,9 +1,15 @@
 from __future__ import print_function
 import pickle
 import os.path
+import argparse
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+
+parser = argparse.ArgumentParser(description='Pass some parameters.')
+parser.add_argument('--spam', default='all', help='Specify the type of SPAM messages to be deleted i.e. UNREAD, READ or ALL')
+args = parser.parse_args()
+delete_spam_mail_type = args.spam.lower()
 
 # If modifying these scopes, delete the file token.pickle.
 #SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
@@ -49,7 +55,9 @@ def main():
                 print("Total Messages in", label['name'], ":", total_msg_count_in_label)
                 print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
 
-                all_msgs_metadata_in_label = service.users().messages().list(userId = "me", labelIds=label['name']).execute()['messages']
+                all_msgs_metadata_in_label = service.users().messages() \
+                    .list(userId = "me", labelIds=label['name'], q='is:{}'.format(delete_spam_mail_type)).execute()['messages']
+            
                 msg_ids_in_label = []
                 for msg_metadata in all_msgs_metadata_in_label:
                     if label['name'] == "SPAM":
