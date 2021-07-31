@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 import json
+import time
 import os.path
 import argparse
 from googleapiclient.discovery import build
@@ -40,19 +41,20 @@ def delete_messages(labels, service):
                 all_msgs_metadata_in_label = service.users().messages() \
                     .list(userId = "me", labelIds=label['name'], q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
             
-                msg_ids_in_label = []
+                msg_ids_in_label = {'ids':[]}
                 for msg_metadata in all_msgs_metadata_in_label:
-                    msg_ids_in_label.append(msg_metadata['id'])
-                    service.users().messages().delete(userId="me", id=msg_metadata['id']).execute()
-                print(len(msg_ids_in_label))
+                    msg_ids_in_label['ids'].append(msg_metadata['id'])
+                    service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
+                print(len(msg_ids_in_label['ids']))
 
 
 def main():
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
     """
+    start_time = time.time()
     creds = None
-    
+
     # The file token.json stores the user's access and refresh tokens, and is created automatically when 
     # the authorization flow completes for the first time.
     if os.path.exists('token.json'):
@@ -77,6 +79,7 @@ def main():
     labels = results.get('labels', [])
 
     delete_messages(labels, service)
+    print("Time taken:", (time.time() - start_time), "seconds")
 
 if __name__ == '__main__':
     main()
