@@ -38,7 +38,10 @@ def delete_messages(labels, service):
                 print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
 
                 all_msgs_metadata_in_label = service.users().messages() \
-                    .list(userId = "me", labelIds=label['name'], maxResults=100, q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
+                                                .list(userId = "me", \
+                                                    labelIds=label['name'], \
+                                                    maxResults=100, \
+                                                    q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
             
                 msg_ids_in_label = {'ids':[]}
                 for msg_metadata in all_msgs_metadata_in_label:
