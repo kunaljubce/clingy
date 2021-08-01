@@ -1,5 +1,5 @@
 #############################################################################################################################################
-# Command to run: pipenv run python3 get_gmail_data.py --labels-and-types '{"category_promotions":"read"}'                                  #
+# Command to run: pipenv run python3 get_gmail_data.py --labels-and-types '{"category_promotions":"unread"}'                                #
 #############################################################################################################################################
 
 from __future__ import print_function
@@ -18,8 +18,7 @@ parser.add_argument('--labels-and-types', default='{"spam":"all", "category_soci
 args = parser.parse_args()
 labels_and_msg_types = args.labels_and_types
 
-# If modifying these scopes, delete the file token.pickle.
-#SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
+# If modifying these scopes, delete the file token.json
 SCOPES = ['https://mail.google.com/']
 
 def delete_messages(labels, service):
@@ -39,13 +38,15 @@ def delete_messages(labels, service):
                 print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
 
                 all_msgs_metadata_in_label = service.users().messages() \
-                    .list(userId = "me", labelIds=label['name'], q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
+                                                .list(userId = "me", \
+                                                    labelIds=label['name'], \
+                                                    maxResults=100, \
+                                                    q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
             
                 msg_ids_in_label = {'ids':[]}
                 for msg_metadata in all_msgs_metadata_in_label:
                     msg_ids_in_label['ids'].append(msg_metadata['id'])
                     service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
-                print(len(msg_ids_in_label['ids']))
 
 
 def main():
