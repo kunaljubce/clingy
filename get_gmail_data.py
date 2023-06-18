@@ -17,6 +17,7 @@ parser.add_argument('--labels-and-types', default='{"spam":"all", "category_soci
     help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
 args = parser.parse_args()
 labels_and_msg_types = args.labels_and_types
+MAX_RESULTS_BATCHSIZE = 100
 
 # If modifying these scopes, delete the file token.json
 SCOPES = ['https://mail.google.com/']
@@ -40,7 +41,7 @@ def delete_messages(labels, service):
                 all_msgs_metadata_in_label = service.users().messages() \
                                                 .list(userId = "me", \
                                                     labelIds=label['name'], \
-                                                    maxResults=100, \
+                                                    maxResults=MAX_RESULTS_BATCHSIZE, \
                                                     q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
             
                 msg_ids_in_label = {'ids':[]}
