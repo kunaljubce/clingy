@@ -17,12 +17,12 @@ parser.add_argument('--labels-and-types', default='{"spam":"all", "category_soci
     help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
 args = parser.parse_args()
 labels_and_msg_types = args.labels_and_types
-MAX_RESULTS_BATCHSIZE = 100
+MAX_RESULTS_BATCHSIZE = 50
 
 # If modifying these scopes, delete the file token.json
 SCOPES = ['https://mail.google.com/']
 
-def delete_messages(labels, service):
+def delete_messages(labels: object, service: object) -> None:
     """
     Takes the label names and service object as arguments and deletes the messages per label.
     """
@@ -50,7 +50,7 @@ def delete_messages(labels, service):
                     service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
 
 
-def main():
+def main() -> None:
     """Shows basic usage of the Gmail API.
     Lists the user's Gmail labels.
     """
