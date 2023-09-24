@@ -7,6 +7,7 @@ import json
 import time
 import os.path
 import argparse
+from typing import Dict
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -21,6 +22,27 @@ MAX_RESULTS_BATCHSIZE = 50
 
 # If modifying these scopes, delete the file token.json
 SCOPES = ['https://mail.google.com/']
+
+def extract_message_metadata(msg_object: object) -> Dict:
+    headers_names_to_be_extracted = {
+                        'From': 'from',
+                        'Return-Path': 'return_path',
+                        'Subject': 'subject',
+                        'Date': 'date',
+                        'To': 'to',
+                        'Reply-To': 'reply_to',
+                        'List-Unsubscribe': 'list_unsubscribe'
+                    }
+    msg_metadata = {}
+    msg_metadata['msg_id'] = msg_object['id']
+    msg_metadata['msg_snippet'] = msg_object['snippet']
+    msg_headers = msg_object['payload']['headers']
+    for header in msg_headers:
+        if header['name'] in headers_names_to_be_extracted.keys():
+            msg_metadata[headers_names_to_be_extracted[header['name']]] = header['value']
+
+    return msg_metadata
+
 
 def delete_messages(labels: object, service: object) -> None:
     """
@@ -45,9 +67,16 @@ def delete_messages(labels: object, service: object) -> None:
                                                     q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
             
                 msg_ids_in_label = {'ids':[]}
+
                 for msg_metadata in all_msgs_metadata_in_label:
                     msg_ids_in_label['ids'].append(msg_metadata['id'])
-                    service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
+                    msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
+                    extracted_msg_metadata = extract_message_metadata(msg_to_be_deleted)
+                    print(f"{extracted_msg_metadata}")
+                    #import sys
+                    #sys.exit(1)
+                    #service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
+                    
 
 
 def main() -> None:
