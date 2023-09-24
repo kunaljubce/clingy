@@ -14,4 +14,4 @@ google-auth-oauthlib = "*"
 python_version = "3.8"
 
 [scripts]
-clingee = "env PYTHONPATH=${PYTHONPATH}:${PWD} python src/get_gmail_data.py"
+clingee = "env PYTHONPATH=${PYTHONPATH}:${PWD} python src/main.py"
