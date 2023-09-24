@@ -12,6 +12,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from archive_msg_metadata import db_conn
 
 parser = argparse.ArgumentParser(description='Pass some parameters.')
 parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
@@ -24,6 +25,9 @@ MAX_RESULTS_BATCHSIZE = 50
 SCOPES = ['https://mail.google.com/']
 
 def extract_message_metadata(msg_object: object) -> Dict:
+    """
+    Extract important metadata from msg object to store in local DB for retrieval
+    """
     headers_names_to_be_extracted = {
                         'From': 'from',
                         'Return-Path': 'return_path',
@@ -73,6 +77,7 @@ def delete_messages(labels: object, service: object) -> None:
                     msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
                     extracted_msg_metadata = extract_message_metadata(msg_to_be_deleted)
                     print(f"{extracted_msg_metadata}")
+                    db_conn('label')
                     #import sys
                     #sys.exit(1)
                     #service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
