@@ -8,10 +8,6 @@ import time
 import os.path
 import argparse
 from typing import Dict
-from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 from archive_msg_metadata import db_conn
 
 parser = argparse.ArgumentParser(description='Pass some parameters.')
@@ -20,9 +16,6 @@ parser.add_argument('--labels-and-types', default='{"spam":"all", "category_soci
 args = parser.parse_args()
 labels_and_msg_types = args.labels_and_types
 MAX_RESULTS_BATCHSIZE = 50
-
-# If modifying these scopes, delete the file token.json
-SCOPES = ['https://mail.google.com/']
 
 def extract_message_metadata(msg_object: object) -> Dict:
     """
@@ -77,45 +70,8 @@ def delete_messages(labels: object, service: object) -> None:
                     msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
                     extracted_msg_metadata = extract_message_metadata(msg_to_be_deleted)
                     print(f"{extracted_msg_metadata}")
-                    db_conn('label')
+                    db_conn(label['id'])
                     #import sys
                     #sys.exit(1)
                     #service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
                     
-
-
-def main() -> None:
-    """Shows basic usage of the Gmail API.
-    Lists the user's Gmail labels.
-    """
-    start_time = time.time()
-    creds = None
-
-    # The file token.json stores the user's access and refresh tokens, and is created automatically when 
-    # the authorization flow completes for the first time.
-    if os.path.exists('token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-
-    # If there are no (valid) credentials available, let the user log in.
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES)
-            creds = flow.run_local_server(port=0)
-
-        # Save the credentials for the next run
-        with open('token.json', 'w') as token:
-            token.write(creds.to_json())
-
-    service = build('gmail', 'v1', credentials=creds)
-
-    # Call the Gmail API
-    results = service.users().labels().list(userId='me').execute()
-    labels = results.get('labels', [])
-
-    delete_messages(labels, service)
-    print("Time taken:", (time.time() - start_time), "seconds")
-
-if __name__ == '__main__':
-    main()
