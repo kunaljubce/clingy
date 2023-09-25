@@ -2,6 +2,7 @@ token.pickle
 credentials.json
 token.json
 .idea
+uncommitted/**
 
 # SQLite DB files
 *.db
