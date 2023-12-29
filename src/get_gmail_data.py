@@ -1,5 +1,5 @@
 #############################################################################################################################################
-# Command to run: pipenv run python3 get_gmail_data.py --labels-and-types '{"category_promotions":"unread"}'                                #
+# Command to run: pipenv run clingee --labels-and-types '{"category_promotions":"unread"}'                                #
 #############################################################################################################################################
 
 from __future__ import print_function
@@ -8,7 +8,7 @@ import time
 import os.path
 import argparse
 from typing import Dict
-from archive_msg_metadata import db_conn
+from archive_msg_metadata import db_insert, db_conn
 
 parser = argparse.ArgumentParser(description='Pass some parameters.')
 parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
@@ -46,6 +46,7 @@ def delete_messages(labels: object, service: object) -> None:
     Takes the label names and service object as arguments and deletes the messages per label.
     """
     delete_msgs_from_labels = list(labels_and_msg_types.keys())
+    extracted_msg_metadata_list = []
 
     if not labels:
         print('No labels found.')
@@ -68,10 +69,25 @@ def delete_messages(labels: object, service: object) -> None:
                 for msg_metadata in all_msgs_metadata_in_label:
                     msg_ids_in_label['ids'].append(msg_metadata['id'])
                     msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
-                    extracted_msg_metadata = extract_message_metadata(msg_to_be_deleted)
-                    print(f"{extracted_msg_metadata}")
-                    db_conn(label['id'])
+                    extracted_msg_metadata_dict = extract_message_metadata(msg_to_be_deleted)
+                    extracted_msg_metadata_list.append(extracted_msg_metadata_dict)
+                
+                db_insert(label['id'], extracted_msg_metadata_list)
+
+                # TODO: To be replaced with an option for user to export these results to an Excel and download on local
+                SHOW_10_ROWS_QUERY = '''SELECT * FROM message_details LIMIT 10'''
+                with db_conn(label['id']) as sqliteConnObj:
+                    cursor = sqliteConnObj.cursor()
+                    cursor.execute(SHOW_10_ROWS_QUERY)
+
+                    print('All Rows Inserted: \n')
+
+                    output = cursor.fetchall()
+                    for row in output:
+                        print(row)
+
+
                     #import sys
                     #sys.exit(1)
-                    #service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
+                service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
                     
