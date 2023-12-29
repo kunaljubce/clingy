@@ -27,7 +27,7 @@ INSERT_MSG_METADATA_QUERY = '''
             '{date}',
             '{reply_to}',
             '{list_unsubscribe}',
-            '{return_path}')
+            '{return_path}');
 '''
 
 def db_conn(label_name: str) -> object:
@@ -55,9 +55,11 @@ def db_conn(label_name: str) -> object:
             
     return sqliteConnection
 
-def db_insert(label_name: str, msg_metadata: Dict[str, Any]) -> None:
+def db_insert(label_name: str, msg_metadata_list: List[Dict[str, Any]]) -> None:
 
-    insert_query = INSERT_MSG_METADATA_QUERY.format(
+    list_of_insert_queries = []
+    for msg_metadata in msg_metadata_list:
+        insert_query = INSERT_MSG_METADATA_QUERY.format(
                                 msg_id = msg_metadata.get('msg_id'),
                                 subject = msg_metadata.get('subject', '').replace("'", '"'),
                                 sender_email = msg_metadata.get('from').replace("'", '"'),
@@ -68,10 +70,13 @@ def db_insert(label_name: str, msg_metadata: Dict[str, Any]) -> None:
                                 list_unsubscribe = msg_metadata.get('list_unsubscribe', '').replace("'", '"'),
                                 return_path = msg_metadata.get('return_path', '').replace("'", '"')
                             )
+        list_of_insert_queries.append(insert_query)
+
+    str_of_insert_queries = ''.join(list_of_insert_queries)
 
     query = 'Creating msg_details table...'
 
     with db_conn(label_name) as sqliteConnObj:
         sqliteConnObj.execute(CREATE_TABLE_QUERY)
         cursor = sqliteConnObj.cursor()
-        cursor.execute(insert_query)
+        cursor.executescript(str_of_insert_queries)
