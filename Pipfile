@@ -7,6 +7,9 @@ name = "pypi"
 google-api-python-client = "*"
 google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
+sqlalchemy = "*"
+openpyxl = "*"
+pandas = "*"
 
 [dev-packages]
 
