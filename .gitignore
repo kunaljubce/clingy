@@ -3,6 +3,7 @@ credentials.json
 token.json
 .idea
 uncommitted/**
+.DS_Store
 
 # SQLite DB files
 *.db
