@@ -4,11 +4,8 @@
 
 from __future__ import print_function
 import json
-import time
-import os.path
 import argparse
-from typing import Dict
-from archive_msg_metadata import db_insert, db_conn
+from typing import Dict, Tuple
 
 parser = argparse.ArgumentParser(description='Pass some parameters.')
 parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
@@ -17,7 +14,7 @@ args = parser.parse_args()
 labels_and_msg_types = args.labels_and_types
 MAX_RESULTS_BATCHSIZE = 50
 
-def extract_message_metadata(msg_object: object) -> Dict:
+def extract_message_contents(msg_object: object) -> Dict:
     """
     Extract important metadata from msg object to store in local DB for retrieval
     """
@@ -41,53 +38,39 @@ def extract_message_metadata(msg_object: object) -> Dict:
     return msg_metadata
 
 
-def delete_messages(labels: object, service: object) -> None:
+def execute_batch_delete(service: object, msg_ids_in_label: Dict) -> None:
+    '''
+    Executes batch delete functionality
+    '''
+    service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
+
+
+def extract_message_metadata_from_labels(label: Dict, service: object) -> Tuple:
     """
-    Takes the label names and service object as arguments and deletes the messages per label.
+    Takes a label dictionary and service object as arguments and deletes the messages per label.
     """
     delete_msgs_from_labels = list(labels_and_msg_types.keys())
     extracted_msg_metadata_list = []
 
-    if not labels:
-        print('No labels found.')
-    else:
-        for label in labels:
-            if label['name'].lower() in delete_msgs_from_labels:
-                label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
-                total_msg_count_in_label, unread_msg_count_in_label = label_dtls['messagesTotal'], label_dtls['messagesUnread']
-                print("Total Messages in", label['name'], ":", total_msg_count_in_label)
-                print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
+    if label['name'].lower() in delete_msgs_from_labels:
+        label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
+        total_msg_count_in_label, unread_msg_count_in_label = label_dtls['messagesTotal'], label_dtls['messagesUnread']
+        print("Total Messages in", label['name'], ":", total_msg_count_in_label)
+        print("Unread Messages in", label['name'], ":", unread_msg_count_in_label)
 
-                all_msgs_metadata_in_label = service.users().messages() \
-                                                .list(userId = "me", \
-                                                    labelIds=label['name'], \
-                                                    maxResults=MAX_RESULTS_BATCHSIZE, \
-                                                    q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
-            
-                msg_ids_in_label = {'ids':[]}
+        all_msgs_metadata_in_label = service.users().messages() \
+                                        .list(userId = "me", \
+                                            labelIds=label['name'], \
+                                            maxResults=MAX_RESULTS_BATCHSIZE, \
+                                            q='is:{}'.format(labels_and_msg_types[label['name'].lower()])).execute()['messages']
+    
+        msg_ids_in_label = {'ids':[]}
 
-                for msg_metadata in all_msgs_metadata_in_label:
-                    msg_ids_in_label['ids'].append(msg_metadata['id'])
-                    msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
-                    extracted_msg_metadata_dict = extract_message_metadata(msg_to_be_deleted)
-                    extracted_msg_metadata_list.append(extracted_msg_metadata_dict)
-                
-                db_insert(label['id'], extracted_msg_metadata_list)
+        for msg_metadata in all_msgs_metadata_in_label:
+            msg_ids_in_label['ids'].append(msg_metadata['id'])
+            msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
+            extracted_msg_metadata_dict = extract_message_contents(msg_to_be_deleted)
+            extracted_msg_metadata_list.append(extracted_msg_metadata_dict)
 
-                # TODO: To be replaced with an option for user to export these results to an Excel and download on local
-                SHOW_10_ROWS_QUERY = '''SELECT * FROM message_details LIMIT 10'''
-                with db_conn(label['id']) as sqliteConnObj:
-                    cursor = sqliteConnObj.cursor()
-                    cursor.execute(SHOW_10_ROWS_QUERY)
-
-                    print('All Rows Inserted: \n')
-
-                    output = cursor.fetchall()
-                    for row in output:
-                        print(row)
-
-
-                    #import sys
-                    #sys.exit(1)
-                service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
+        return (msg_ids_in_label, extracted_msg_metadata_list)
                     
