@@ -37,19 +37,8 @@ def db_conn(label_name: str) -> object:
             TODO: Explore the possibility of one DB and multiple schemas/tables.
     """
     db_name = f'gmail_{label_name.lower()}.db' 
-    """ try:
-        db_uri = 'file:{}?mode=rw'.format(pathname2url(db_name))
-        # Connect to DB and create a cursor
-        sqliteConnection = lite.connect(db_uri, uri=True)
-        print("DB exists!")
-    
-    except lite.OperationalError:
-        db_uri = 'file:{}?mode=rwc'.format(pathname2url(db_name))
-        # Connect to DB and create a cursor
-        sqliteConnection = lite.connect(db_uri, uri=True)
-        print("Creating DB!")"""
 
-    # Connect to DB and create a cursor
+    # Connect to DB and create a connection object
     sqliteConnection = lite.connect(db_name)
     print('Instance of SQLite DB initiated!')
             
