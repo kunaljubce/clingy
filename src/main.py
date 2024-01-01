@@ -11,6 +11,8 @@ from export_archived_msgs_to_excel import export_archived_msgs
 
 # If modifying these scopes, delete the file token.json
 SCOPES = ['https://mail.google.com/']
+YES_LIST = ['yes', 'y']
+NO_LIST = ['no', 'n']
 
 def execute_clingy(label: Dict, service: object) -> None:
     '''
@@ -27,19 +29,28 @@ def execute_clingy(label: Dict, service: object) -> None:
         print("Messages once deleted cannot be recovered!")
         print("Before deleting, would you prefer to take a look the message contents? (Y/Yes/N/No)")
 
-        while export_messages_user_input not in ['yes', 'y', 'no', 'n']:
+        while export_messages_user_input not in (YES_LIST + NO_LIST):
             if not export_messages_user_input.__eq__('flag'):
                 print("Invalid input! Accepted responses are - Yes, Y, No, N - in any case!")
             export_messages_user_input = input("Provide your response...").lower()
 
-        if export_messages_user_input in ['yes', 'y']:
+        if export_messages_user_input in YES_LIST:
             export_archived_msgs(label['id'])
-        elif export_messages_user_input in ['no', 'n']:
+
+            # Get double confirmation from user before deleting
+            confirm_deletion_user_input = input("Confirm deletion of messages? Enter Yes or Y to delete the messages shown in Excel, No or N to stop...").lower()
+            while confirm_deletion_user_input not in (YES_LIST + NO_LIST):
+                confirm_deletion_user_input = input("Invalid input! Accepted responses are - Yes, Y, No, N - in any case! \n Confirm deletion? ").lower()
+            if confirm_deletion_user_input in NO_LIST:
+                print("Clingy process terminating! Mails will not be deleted...")
+                return
+        
+        elif export_messages_user_input in NO_LIST:
             print("You have opted out of downloading the message contents before deletion!")
 
         print("Deleting messages...")
 
-        execute_batch_delete(service, msg_ids_in_label)
+        #execute_batch_delete(service, msg_ids_in_label)
 
 
 def main() -> None:
