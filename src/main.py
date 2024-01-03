@@ -27,7 +27,7 @@ def execute_clingy(label: Dict, service: object, labels_and_msg_types: Dict) -> 
     # Out of all labels in inbox, only act on the labels mentioned by user
     if label['name'].lower() in list(labels_and_msg_types.keys()):
         msg_ids_in_label, extracted_msg_metadata_list = extract_message_metadata_from_labels(label, service, labels_and_msg_types)
-        db_insert(label['id'], extracted_msg_metadata_list)
+        db_insert(label['name'], extracted_msg_metadata_list)
 
         print("Messages once deleted cannot be recovered!")
         print("Before deleting, would you prefer to take a look the message contents? (Y/Yes/N/No)")
@@ -38,7 +38,7 @@ def execute_clingy(label: Dict, service: object, labels_and_msg_types: Dict) -> 
             export_messages_user_input = input("Provide your response...").lower()
 
         if export_messages_user_input in YES_LIST:
-            export_archived_msgs(label['id'])
+            export_archived_msgs(label['name'])
 
             # Get double confirmation from user before deleting
             confirm_deletion_user_input = input("Confirm deletion of messages? Enter Yes or Y to delete the messages shown in Excel, No or N to stop...").lower()
@@ -64,10 +64,13 @@ def main() -> None:
     creds = None
 
     parser = argparse.ArgumentParser(description='Pass some parameters.')
-    parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
-        help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
+    parser.add_argument('--fetch-labels', default=False, type=bool, \
+                help=r'Mark as True if you want Clingy to fetch all label names in your inbox')
+    parser.add_argument('--labels', default='{}', type=json.loads, \
+                help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
     args = parser.parse_args()
-    labels_and_msg_types = args.labels_and_types
+    labels_and_msg_types = args.labels
+    fetch_all_labels = args.fetch_labels
 
     welcome_screen()
 
@@ -98,7 +101,10 @@ def main() -> None:
         print('No labels found.')
     else:
         for label in labels:
-            execute_clingy(label, service, labels_and_msg_types)    
+            if fetch_all_labels:
+                print(label['name'])
+            elif len(list(labels_and_msg_types.keys())) > 0:
+                execute_clingy(label, service, labels_and_msg_types)    
     
     print("Time taken:", (time.time() - start_time), "seconds")
 
