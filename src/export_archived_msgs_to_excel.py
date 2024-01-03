@@ -16,8 +16,9 @@ def export_archived_msgs(label_name: str, all_msgs: bool = False) -> None:
     label_name = label_name.lower()
     current_datetime = dt.now().strftime('%Y%m%d_%H%M%S')
     db_name = f'gmail_{label_name}.db' 
+    db_path = os.path.join(download_path, db_name)
     excel_file = os.path.join(download_path, f'gmail_{label_name}_{current_datetime}.xlsx')
-    engine = create_engine(f'sqlite:///{db_name}')
+    engine = create_engine(f'sqlite:///{db_path}')
 
     print(f"Saving details of messages to be deleted in {excel_file}...")
     if all_msgs:
