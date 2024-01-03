@@ -3,15 +3,8 @@
 #############################################################################################################################################
 
 from __future__ import print_function
-import json
-import argparse
 from typing import Dict, Tuple
 
-parser = argparse.ArgumentParser(description='Pass some parameters.')
-parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
-    help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
-args = parser.parse_args()
-labels_and_msg_types = args.labels_and_types
 MAX_RESULTS_BATCHSIZE = 50
 
 def extract_message_contents(msg_object: object) -> Dict:
@@ -45,7 +38,7 @@ def execute_batch_delete(service: object, msg_ids_in_label: Dict) -> None:
     service.users().messages().batchDelete(userId="me", body=msg_ids_in_label).execute()
 
 
-def extract_message_metadata_from_labels(label: Dict, service: object) -> Tuple:
+def extract_message_metadata_from_labels(label: Dict, service: object, labels_and_msg_types: Dict) -> Tuple:
     """
     Takes a label dictionary and service object as arguments and deletes the messages per label.
     """

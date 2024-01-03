@@ -1,12 +1,15 @@
 import os
+import json
 import time
+import argparse
 from typing import Dict
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from get_gmail_data import extract_message_metadata_from_labels, execute_batch_delete, labels_and_msg_types
+from get_gmail_data import extract_message_metadata_from_labels, execute_batch_delete
 from archive_msg_metadata import db_insert
+from utils.welcome import welcome_screen
 from export_archived_msgs_to_excel import export_archived_msgs
 
 # If modifying these scopes, delete the file token.json
@@ -14,7 +17,7 @@ SCOPES = ['https://mail.google.com/']
 YES_LIST = ['yes', 'y']
 NO_LIST = ['no', 'n']
 
-def execute_clingy(label: Dict, service: object) -> None:
+def execute_clingy(label: Dict, service: object, labels_and_msg_types: Dict) -> None:
     '''
     Function to do the actual heavy lifting of Clingy. It gets called from main() and performs db archive of deleted 
     messages, takes in user input to provide summary of deleted messages in Excel, and invokes batch delete function. 
@@ -23,7 +26,7 @@ def execute_clingy(label: Dict, service: object) -> None:
 
     # Out of all labels in inbox, only act on the labels mentioned by user
     if label['name'].lower() in list(labels_and_msg_types.keys()):
-        msg_ids_in_label, extracted_msg_metadata_list = extract_message_metadata_from_labels(label, service)
+        msg_ids_in_label, extracted_msg_metadata_list = extract_message_metadata_from_labels(label, service, labels_and_msg_types)
         db_insert(label['id'], extracted_msg_metadata_list)
 
         print("Messages once deleted cannot be recovered!")
@@ -60,6 +63,14 @@ def main() -> None:
     start_time = time.time()
     creds = None
 
+    parser = argparse.ArgumentParser(description='Pass some parameters.')
+    parser.add_argument('--labels-and-types', default='{"spam":"all", "category_social":"all", "category_promotions":"all"}', type=json.loads, \
+        help=r'Specify the label name(s) and their message type to be deleted in the format {"label_name":"message_type"}')
+    args = parser.parse_args()
+    labels_and_msg_types = args.labels_and_types
+
+    welcome_screen()
+
     # The file token.json stores the user's access and refresh tokens, and is created automatically when 
     # the authorization flow completes for the first time.
     if os.path.exists('token.json'):
@@ -87,7 +98,7 @@ def main() -> None:
         print('No labels found.')
     else:
         for label in labels:
-            execute_clingy(label, service)    
+            execute_clingy(label, service, labels_and_msg_types)    
     
     print("Time taken:", (time.time() - start_time), "seconds")
 
