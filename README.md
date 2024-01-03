@@ -1,4 +1,4 @@
-## Clingee (pronounced, clean-gee) - Your personal Gmail cleaner
+## Clingy (pronounced, Cling-ee) - Your personal Gmail cleaner
 
 ### Are you tired of those thousands of social, promotional and spam mails flooding your inbox?
 ### Now that Google Photos is a part of your 15 GB Google Drive capacity, are you freaked out about cleaning up your mail box?

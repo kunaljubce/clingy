@@ -1,5 +1,5 @@
 #############################################################################################################################################
-# Command to run: pipenv run clingee --labels-and-types '{"category_promotions":"unread"}'                                #
+# Command to run: pipenv run clingy --labels-and-types '{"category_promotions":"unread"}'                                                   #
 #############################################################################################################################################
 
 from __future__ import print_function
