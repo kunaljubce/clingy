@@ -1,4 +1,4 @@
-def display_app_name() -> None:
+def welcome_screen() -> None:
     
     print("""
      ____ _ _            
@@ -7,5 +7,7 @@ def display_app_name() -> None:
    | |___| | | | | | (_| | |_| |
     \____|_|_|_| |_|\__, |\__, |
                     |___/  |__/
+          
+    Clingy 1.0 welcomes you!
+    
     """)
-
