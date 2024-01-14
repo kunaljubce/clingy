@@ -10,6 +10,7 @@ google-auth-oauthlib = "*"
 sqlalchemy = "*"
 openpyxl = "*"
 pandas = "*"
+pytest = "*"
 
 [dev-packages]
 
