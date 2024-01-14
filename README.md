@@ -19,6 +19,45 @@ Clingy is a CLI (Command Line Interface) tool that will purge your mailbox of un
 * Once created, please download the file and move it to the current directory and save it as `credentials.json`.
 * Setup the environment using the command - `pipenv sync -d`. This will setup your virtual environment using Pipfile.Lock.
 
+#### Test if your credentials.json is valid
+* Execute the command - `pipenv run pytest`. 
+
+If your authentication is working fine, the test will succeed and you should see the below message - 
+```
+→ pipenv run pytest                                                
+======================================================================= test session starts =======================================================================
+platform darwin -- Python 3.8.18, pytest-7.4.4, pluggy-1.3.0
+rootdir: /Users/a81045729/Documents/constant_variables/gmail-cleaner
+configfile: pytest.ini
+collected 1 item                                                                                                                                                  
+
+tests/test_auth.py .                                                                                                                                        [100%]
+
+======================================================================== 1 passed in 0.94s ========================================================================
+```
+
+For first time users, you will be redirected to a Google screen to choose your Gmail account and authenticate the application as below. If you have used Clingy before, you should not have to follow the below steps and instead you will directly see the above success message on your console.
+
+- Step 1: Choose the account on which you want Clingy to run its magic:
+
+    ![Alt text](docs/_static/new_user_auth_screen_1.jpg)
+
+- Step 2: The next screen will show you a warning. Click on Advanced:
+
+    ![Alt text](docs/_static/new_user_auth_screen_2.jpg)
+
+- Step 3: On the next screen, click on "Go to Quickstart (unsafe)" as highlighted in the screenshot below:
+
+    ![Alt text](docs/_static/new_user_auth_screen_3.png)
+
+- Step 4: The next screen will prompt you to allow Quickstart access to your Google Account, press Continue:
+
+    ![Alt text](docs/_static/new_user_auth_screen_4.png)
+
+- Step 5: If everything went as expected, you should see a success message like below.
+
+    ![Alt text](docs/_static/new_user_auth_screen_5.png)
+
 #### Congratulations! Now you are ready to execute Clingy operations on your Gmail. 
 
 * To fetch all labels from your mailbox:
