@@ -7,6 +7,10 @@ name = "pypi"
 google-api-python-client = "*"
 google-auth-httplib2 = "*"
 google-auth-oauthlib = "*"
+sqlalchemy = "*"
+openpyxl = "*"
+pandas = "*"
+pytest = "*"
 
 [dev-packages]
 
@@ -14,4 +18,4 @@ google-auth-oauthlib = "*"
 python_version = "3.8"
 
 [scripts]
-clingee = "env PYTHONPATH=${PYTHONPATH}:${PWD} python src/main.py"
+clingy = "env PYTHONPATH=${PYTHONPATH}:${PWD} python src/main.py"
