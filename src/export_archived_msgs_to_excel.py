@@ -3,7 +3,6 @@ import pandas as pd
 from typing import List
 from datetime import datetime as dt
 from sqlalchemy import MetaData, create_engine, Table, sql, select
-from archive_msg_metadata import db_conn
 from utils.config import get_clingy_app_download_path
 
 # TODO: To be replaced with an option for user to export these results to an Excel and download on local
