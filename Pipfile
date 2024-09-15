@@ -11,11 +11,12 @@ sqlalchemy = "*"
 openpyxl = "*"
 pandas = "*"
 pytest = "*"
+oauth2client = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.8"
+python_version = "3.12"
 
 [scripts]
 clingy = "env PYTHONPATH=${PYTHONPATH}:${PWD} python src/main.py"
