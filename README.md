@@ -20,20 +20,20 @@ Clingy is a CLI (Command Line Interface) tool that will purge your mailbox of un
 * Setup the environment using the command - `pipenv sync -d`. This will setup your virtual environment using Pipfile.Lock.
 
 #### Test if your credentials.json is valid
-* Execute the command - `pipenv run pytest`. 
+* Execute the command - `pipenv run pytest tests/test_user_setup.py`. 
 
 If your authentication is working fine, the test will succeed and you should see the below message - 
 ```
-→ pipenv run pytest                                                
-======================================================================= test session starts =======================================================================
+→ pipenv run pytest tests/test_user_setup.py                                                
+==================================== test session starts ====================================
 platform darwin -- Python 3.8.18, pytest-7.4.4, pluggy-1.3.0
 rootdir: /Users/a81045729/Documents/constant_variables/gmail-cleaner
 configfile: pytest.ini
 collected 1 item                                                                                                                                                  
 
-tests/test_auth.py .                                                                                                                                        [100%]
+tests/test_user_setup.py .                                                             [100%]
 
-======================================================================== 1 passed in 0.94s ========================================================================
+===================================== 1 passed in 0.94s =====================================
 ```
 
 For first time users, you will be redirected to a Google screen to choose your Gmail account and authenticate the application as below. If you have used Clingy before, you should not have to follow the below steps and instead you will directly see the above success message on your console.

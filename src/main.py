@@ -118,3 +118,4 @@ class Clingy:
 if __name__ == '__main__':
     clingy = Clingy('credentials.json')
     clingy.main()
+    

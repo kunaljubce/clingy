@@ -1,8 +1,9 @@
 #############################################################################################################################################
-# Command to run: pipenv run clingy --labels-and-types '{"category_promotions":"unread"}'                                                   #
+# Command to run: pipenv run clingy --labels '{"category_promotions":"unread"}'                                                   #
 #############################################################################################################################################
 
 from __future__ import print_function
+from time import perf_counter
 from typing import Dict, Tuple
 
 MAX_RESULTS_BATCHSIZE = 50
@@ -45,6 +46,8 @@ def extract_message_metadata_from_labels(label: Dict, service: object, labels_an
     delete_msgs_from_labels = list(labels_and_msg_types.keys())
     extracted_msg_metadata_list = []
 
+    t1_start = perf_counter()
+
     if label['name'].lower() in delete_msgs_from_labels:
         label_dtls = service.users().labels().get(userId="me", id=label['name']).execute()
         total_msg_count_in_label, unread_msg_count_in_label = label_dtls['messagesTotal'], label_dtls['messagesUnread']
@@ -64,6 +67,9 @@ def extract_message_metadata_from_labels(label: Dict, service: object, labels_an
             msg_to_be_deleted = service.users().messages().get(userId='me', id=msg_metadata['id']).execute()
             extracted_msg_metadata_dict = extract_message_contents(msg_to_be_deleted)
             extracted_msg_metadata_list.append(extracted_msg_metadata_dict)
+
+        t1_stop = perf_counter()
+        print("Time taken: ", t1_stop - t1_start)
 
         return (msg_ids_in_label, extracted_msg_metadata_list)
                     
