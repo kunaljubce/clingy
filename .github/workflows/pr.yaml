@@ -1,0 +1,41 @@
+name: pr-build
+
+on:
+  workflow_dispatch:
+
+  pull_request:
+    types:
+      - labeled
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+    test_imports:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+      
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                python-version: 3.12
+      
+            - name: Install pipenv
+              run: python -m pip install --upgrade pip && pip install pipenv -q
+      
+            - name: Cache pipenv
+              id: cache-pipenv
+              uses: actions/cache@v4.0.2
+              with:
+                path: ~/.local/share/virtualenvs
+                key: ${{ runner.os }}-pipenv-public-${{ hashFiles('**/Pipfile.lock') }}
+
+            - name: Install dependencies
+              if: steps.cache-pipenv.outputs.cache-hit != 'true'
+              run: pipenv sync -d
+
+            - name: pylink checker for imports
+              run: pipenv run pylint --disable=all --enable=import-error --jobs=3  tests src utils

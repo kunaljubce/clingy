@@ -4,14 +4,15 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-google-api-python-client = "*"
-google-auth-httplib2 = "*"
-google-auth-oauthlib = "*"
+google-api-python-client = "==2.145.0"
+google-auth-httplib2 = "==0.2.0"
+google-auth-oauthlib = "==1.2.1"
 sqlalchemy = "*"
 openpyxl = "*"
 pandas = "*"
 pytest = "*"
 oauth2client = "*"
+pylint = "*"
 
 [dev-packages]
 
