@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from src.get_gmail_data import extract_message_metadata_from_labels, execute_batch_delete
+from src.get_gmail_data import extract_message_metadata_from_labels, execute_batch_delete, do_actual_deletion, figure_out_name_of_func
 from src.archive_msg_metadata import db_insert
 from utils.welcome import welcome_screen
 from src.export_archived_msgs_to_excel import export_archived_msgs
@@ -53,7 +53,8 @@ class Clingy:
 
         # Out of all labels in inbox, only act on the labels mentioned by user
         if label['name'].lower() in list(labels_and_msg_types.keys()):
-            msg_ids_in_label, extracted_msg_metadata_list = extract_message_metadata_from_labels(label, service, labels_and_msg_types)
+            # msg_ids_in_label, extracted_msg_metadata_list = extract_message_metadata_from_labels(label, service, labels_and_msg_types)
+            extracted_msg_metadata_list = figure_out_name_of_func(label, service, labels_and_msg_types)
             db_insert(label['name'], extracted_msg_metadata_list)
 
             print("Messages once deleted cannot be recovered!")
@@ -80,7 +81,8 @@ class Clingy:
 
             print("Deleting messages...")
 
-            execute_batch_delete(service, msg_ids_in_label)
+            # execute_batch_delete(service, msg_ids_in_label)
+            do_actual_deletion(label, service, labels_and_msg_types)
 
     def main(self):
         """Shows basic usage of the Gmail API.
